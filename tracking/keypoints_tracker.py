@@ -3,7 +3,6 @@ from tracking.abstract_tracker import AbstractTracker
 import cv2
 import supervision as sv
 from typing import List, Any
-# from ultralytics.engine.results import Results
 import numpy as np
 
 class KeypointsTracker(AbstractTracker):
@@ -34,12 +33,12 @@ class KeypointsTracker(AbstractTracker):
             frames (List[np.ndarray]): List of frames for detection.
         
         Returns:
-            List[Results]: Detected keypoints for each frame
+            List: Detected keypoints for each frame
         """
         # Adjust contrast before detection for each frame
         contrast_adjusted_frames = [self._preprocess_frame(frame) for frame in frames]
 
-        # Use YOLOv8's batch predict method
+        # batch predict method
         detections = self.client.infer(contrast_adjusted_frames)
         return detections
 
@@ -48,7 +47,7 @@ class KeypointsTracker(AbstractTracker):
         Perform keypoint tracking based on detections.
         
         Args:
-            detection (Results): Detected keypoints for a single frame.
+            detection: Detected keypoints for a single frame.
         
         Returns:
             dict: Dictionary containing tracks of the frame.

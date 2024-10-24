@@ -4,7 +4,6 @@ import supervision as sv
 import cv2
 from typing import List, Any
 import numpy as np
-# from ultralytics.engine.results import Results
 
 class ObjectTracker(AbstractTracker):
 
@@ -36,12 +35,12 @@ class ObjectTracker(AbstractTracker):
             frames (List[np.ndarray]): List of frames to perform object detection on.
 
         Returns:
-            List[Results]: Detection results for each frame.
+            List: Detection results for each frame.
         """
         # Preprocess: Resize frames to 1280x1280
         resized_frames = [self._preprocess_frame(frame) for frame in frames]
 
-        # Use YOLOv8's predict method to handle batch inference
+        # predict method to handle batch inference
         detections = self.client.infer(resized_frames)
 
         return detections  # Batch of detections
@@ -51,7 +50,7 @@ class ObjectTracker(AbstractTracker):
         Perform object tracking on detection.
 
         Args:
-            detection (Results): Detected objects for a single frame.
+            detection: Detected objects for a single frame.
 
         Returns:
             dict: Dictionary containing tracks of the frame.

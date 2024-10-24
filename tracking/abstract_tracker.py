@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-# from ultralytics import YOLO
-# import torch
 from typing import Any, Dict, List
-# from ultralytics.engine.results import Results
 from inference_sdk import InferenceHTTPClient, InferenceConfiguration
 import numpy as np
 
