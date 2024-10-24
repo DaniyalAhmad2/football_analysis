@@ -2,14 +2,14 @@ from tracking.abstract_tracker import AbstractTracker
 
 import cv2
 import supervision as sv
-from typing import List
-from ultralytics.engine.results import Results
+from typing import List, Any
+# from ultralytics.engine.results import Results
 import numpy as np
 
 class KeypointsTracker(AbstractTracker):
     """Detection and Tracking of football field keypoints"""
 
-    def __init__(self, model_path: str, conf: float = 0.1, kp_conf: float = 0.7) -> None:
+    def __init__(self, model_id: str, conf: float = 0.1, kp_conf: float = 0.7) -> None:
         """
         Initialize KeypointsTracker for tracking keypoints.
         
@@ -18,7 +18,7 @@ class KeypointsTracker(AbstractTracker):
             conf (float): Confidence threshold for field detection.
             kp_conf (float): Confidence threshold for keypoints.
         """
-        super().__init__(model_path, conf)  # Call the Tracker base class constructor
+        super().__init__(model_id, conf)  # Call the Tracker base class constructor
         self.kp_conf = kp_conf  # Keypoint Confidence Threshold
         self.tracks = []  # Initialize tracks list
         self.cur_frame = 0  # Frame counter initialization
@@ -26,7 +26,7 @@ class KeypointsTracker(AbstractTracker):
         self.scale_x = self.original_size[0] / 1280
         self.scale_y = self.original_size[1] / 1280
 
-    def detect(self, frames: List[np.ndarray]) -> List[Results]:
+    def detect(self, frames: List[np.ndarray]) -> List[Any]:
         """
         Perform keypoint detection on multiple frames.
 
@@ -40,10 +40,10 @@ class KeypointsTracker(AbstractTracker):
         contrast_adjusted_frames = [self._preprocess_frame(frame) for frame in frames]
 
         # Use YOLOv8's batch predict method
-        detections = self.model.predict(contrast_adjusted_frames, conf=self.conf)
+        detections = self.client.infer(contrast_adjusted_frames)
         return detections
 
-    def track(self, detection: Results) -> dict:
+    def track(self, detection: Any) -> dict:
         """
         Perform keypoint tracking based on detections.
         
@@ -53,7 +53,7 @@ class KeypointsTracker(AbstractTracker):
         Returns:
             dict: Dictionary containing tracks of the frame.
         """
-        detection = sv.KeyPoints.from_ultralytics(detection)
+        detection = sv.KeyPoints.from_inference(detection)
         
         # Check 
         if not detection:

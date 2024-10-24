@@ -15,7 +15,7 @@ def main():
     # 1. Load the object detection model
     # Adjust the 'conf' value as per your requirements.
     obj_tracker = ObjectTracker(
-        model_path='models/weights/object-detection.pt',    # Object Detection Model Weights Path
+        model_id="football-players-detection-3zvbc-7ocfe/2",    # Object Detection Model Weights Path
         conf=.5,                                            # Object Detection confidence threshold
         ball_conf=.05                                        # Ball Detection confidence threshold
     )
@@ -23,7 +23,7 @@ def main():
     # 2. Load the keypoints detection model
     # Adjust the 'conf' and 'kp_conf' values as per your requirements.
     kp_tracker = KeypointsTracker(
-        model_path='models/weights/keypoints-detection.pt', # Keypoints Model Weights Path
+        model_id='football-field-detection-f07vi-apxzb/1', # Keypoints Model Weights Path
         conf=.3,                                            # Field Detection confidence threshold
         kp_conf=.7,                                         # Keypoint confidence threshold
     )
@@ -79,7 +79,7 @@ def main():
     # Specify the input video path and the output video path. 
     # The batch_size determines how many frames are processed in one go.
     process_video(processor,                                # Created FootballVideoProcessor object
-                  video_source='input_videos/video2.mp4', # Video source (in this case video file path)
+                  video_source='573e61_0.mp4', # Video source (in this case video file path)
                   output_video='output_videos/testx.mp4',    # Output video path (Optional)
                   batch_size=10                             # Number of frames to process at once
                   )

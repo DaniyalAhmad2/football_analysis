@@ -2,13 +2,13 @@ from tracking.abstract_tracker import AbstractTracker
 
 import supervision as sv
 import cv2
-from typing import List
+from typing import List, Any
 import numpy as np
-from ultralytics.engine.results import Results
+# from ultralytics.engine.results import Results
 
 class ObjectTracker(AbstractTracker):
 
-    def __init__(self, model_path: str, conf: float = 0.5, ball_conf: float = 0.3) -> None:
+    def __init__(self, model_id: str, conf: float = 0.5, ball_conf: float = 0.3) -> None:
         """
         Initialize ObjectTracker with detection and tracking.
 
@@ -16,7 +16,7 @@ class ObjectTracker(AbstractTracker):
             model_path (str): Model Path.
             conf (float): Confidence threshold for detection.
         """
-        super().__init__(model_path, conf)  # Call the Tracker base class constructor
+        super().__init__(model_id, conf)  # Call the Tracker base class constructor
 
         self.ball_conf = ball_conf
         self.classes = ['ball', 'goalkeeper', 'player', 'referee']
@@ -28,7 +28,7 @@ class ObjectTracker(AbstractTracker):
         self.scale_x = self.original_size[0] / 1280
         self.scale_y = self.original_size[1] / 1280
 
-    def detect(self, frames: List[np.ndarray]) -> List[Results]:
+    def detect(self, frames: List[np.ndarray]) -> List[Any]:
         """
         Perform object detection on multiple frames.
 
@@ -42,11 +42,11 @@ class ObjectTracker(AbstractTracker):
         resized_frames = [self._preprocess_frame(frame) for frame in frames]
 
         # Use YOLOv8's predict method to handle batch inference
-        detections = self.model.predict(resized_frames, conf=self.conf)
+        detections = self.client.infer(resized_frames)
 
         return detections  # Batch of detections
 
-    def track(self, detection: Results) -> dict:
+    def track(self, detection: Any) -> dict:
         """
         Perform object tracking on detection.
 
@@ -57,7 +57,7 @@ class ObjectTracker(AbstractTracker):
             dict: Dictionary containing tracks of the frame.
         """
         # Convert Ultralytics detections to supervision
-        detection_sv = sv.Detections.from_ultralytics(detection)
+        detection_sv = sv.Detections.from_inference(detection)
 
         # Perform ByteTracker object tracking on the detections
         tracks = self.tracker.update_with_detections(detection_sv)
