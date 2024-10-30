@@ -28,6 +28,10 @@ class ClubAssigner:
             club1.name: club1.goalkeeper_jersey_color,
             club2.name: club2.goalkeeper_jersey_color
         }
+        self.all_club_colors = {
+            club1.name: [club1.player_jersey_color, club1.goalkeeper_jersey_color],
+            club2.name: [club2.player_jersey_color, club2.goalkeeper_jersey_color]
+        }
         self.kmeans = KMeans(n_clusters=2, init='k-means++', n_init=10, random_state=42)
 
         # Saving images for analysis
@@ -154,47 +158,120 @@ class ClubAssigner:
         
         return jersey_color
 
-    def get_player_club(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False) -> Tuple[str, int]:
-        """
-        Determine the club associated with a player based on their jersey color.
+    # def get_player_club(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False) -> Tuple[str, int]:
+    #     """
+    #     Determine the club associated with a player based on their jersey color.
 
-        Args:
-            frame (np.ndarray): The current video frame.
-            bbox (Tuple[int, int, int, int]): The bounding box coordinates (x1, y1, x2, y2).
-            player_id (int): The unique identifier for the player.
-            is_goalkeeper (bool): Flag to indicate if the player is a goalkeeper.
+    #     Args:
+    #         frame (np.ndarray): The current video frame.
+    #         bbox (Tuple[int, int, int, int]): The bounding box coordinates (x1, y1, x2, y2).
+    #         player_id (int): The unique identifier for the player.
+    #         is_goalkeeper (bool): Flag to indicate if the player is a goalkeeper.
 
-        Returns:
-            Tuple[str, int]: The club name and the predicted class index.
-        """
-        color = self.get_jersey_color(frame, bbox, player_id, is_goalkeeper)
-        pred = self.model.predict(color, is_goalkeeper)
+    #     Returns:
+    #         Tuple[str, int]: The club name and the predicted class index.
+    #     """
+    #     color = self.get_jersey_color(frame, bbox, player_id, is_goalkeeper)
+    #     pred = self.model.predict(color, is_goalkeeper)
         
-        return list(self.club_colors.keys())[pred], pred
+    #     return list(self.club_colors.keys())[pred], pred
+
+    # def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
+    #     """
+    #     Assign clubs to players and goalkeepers based on their jersey colors.
+
+    #     Args:
+    #         frame (np.ndarray): The current video frame.
+    #         tracks (Dict[str, Dict[int, Any]]): The tracking data for players and goalkeepers.
+
+    #     Returns:
+    #         Dict[str, Dict[int, Any]]: The updated tracking data with assigned clubs.
+    #     """
+    #     tracks = tracks.copy()
+
+    #     for track_type in ['goalkeeper', 'player']:
+    #         for player_id, track in tracks[track_type].items():
+    #             bbox = track['bbox']
+    #             is_goalkeeper = (track_type == 'goalkeeper')
+    #             club, _ = self.get_player_club(frame, bbox, player_id, is_goalkeeper)
+                
+    #             tracks[track_type][player_id]['club'] = club
+    #             tracks[track_type][player_id]['club_color'] = self.club_colors[club]
+        
+    #     return tracks
 
     def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
-        """
-        Assign clubs to players and goalkeepers based on their jersey colors.
-
-        Args:
-            frame (np.ndarray): The current video frame.
-            tracks (Dict[str, Dict[int, Any]]): The tracking data for players and goalkeepers.
-
-        Returns:
-            Dict[str, Dict[int, Any]]: The updated tracking data with assigned clubs.
-        """
         tracks = tracks.copy()
 
-        for track_type in ['goalkeeper', 'player']:
+        # Combine players and goalkeepers
+        all_colors = []
+        all_ids = []
+        all_types = []
+
+        for track_type in ['player', 'goalkeeper']:
             for player_id, track in tracks[track_type].items():
                 bbox = track['bbox']
-                is_goalkeeper = (track_type == 'goalkeeper')
-                club, _ = self.get_player_club(frame, bbox, player_id, is_goalkeeper)
-                
-                tracks[track_type][player_id]['club'] = club
-                tracks[track_type][player_id]['club_color'] = self.club_colors[club]
-        
+                jersey_color = self.get_jersey_color(frame, bbox, player_id)
+                all_colors.append(jersey_color)
+                all_ids.append(player_id)
+                all_types.append(track_type)
+
+        if len(all_colors) >= 2:
+            # Perform K-Means clustering on all jersey colors
+            all_colors_np = np.array(all_colors)
+            kmeans_all = KMeans(n_clusters=2, random_state=42)
+            kmeans_all.fit(all_colors_np)
+            labels_all = kmeans_all.labels_
+
+            # Map clusters to clubs
+            centroids_all = kmeans_all.cluster_centers_
+            # Flatten the club colors for comparison
+            club_colors_list = []
+            club_names_list = []
+            for club_name, colors in self.all_club_colors.items():
+                for color in colors:
+                    club_colors_list.append(color)
+                    club_names_list.append(club_name)
+            club_colors_np = np.array(club_colors_list)
+
+            cluster_to_club = {}
+            for cluster_label in range(2):
+                centroid = centroids_all[cluster_label]
+                distances = np.linalg.norm(club_colors_np - centroid, axis=1)
+                club_index = np.argmin(distances)
+                club_name = club_names_list[club_index]
+                cluster_to_club[cluster_label] = club_name
+
+            # Assign clubs to all individuals
+            for idx, player_id in enumerate(all_ids):
+                cluster_label = labels_all[idx]
+                club_name = cluster_to_club[cluster_label]
+                track_type = all_types[idx]
+                tracks[track_type][player_id]['club'] = club_name
+                # Assign the appropriate club color
+                if track_type == 'goalkeeper':
+                    tracks[track_type][player_id]['club_color'] = self.goalkeeper_colors[club_name]
+                else:
+                    tracks[track_type][player_id]['club_color'] = self.club_colors[club_name]
+        else:
+            # Not enough individuals to cluster, assign based on closest color
+            for idx, player_id in enumerate(all_ids):
+                color = all_colors[idx]
+                track_type = all_types[idx]
+                if track_type == 'goalkeeper':
+                    pred = self.model.predict(color, is_goalkeeper=True)
+                    club_name = list(self.goalkeeper_colors.keys())[pred]
+                    tracks[track_type][player_id]['club'] = club_name
+                    tracks[track_type][player_id]['club_color'] = self.goalkeeper_colors[club_name]
+                else:
+                    pred = self.model.predict(color, is_goalkeeper=False)
+                    club_name = list(self.club_colors.keys())[pred]
+                    tracks[track_type][player_id]['club'] = club_name
+                    tracks[track_type][player_id]['club_color'] = self.club_colors[club_name]
+
         return tracks
+
+
 
 class ClubAssignerModel:
     def __init__(self, club1: Club, club2: Club) -> None:

@@ -19,7 +19,7 @@ class ObjectTracker(AbstractTracker):
 
         self.ball_conf = ball_conf
         self.classes = ['ball', 'goalkeeper', 'player', 'referee']
-        self.tracker = sv.ByteTrack(lost_track_buffer=15)  # Initialize ByteTracker
+        self.tracker = sv.ByteTrack(lost_track_buffer=30)  # Initialize ByteTracker
         self.tracker.reset()
         self.all_tracks = {class_name: {} for class_name in self.classes}  # Initialize tracks
         self.cur_frame = 0  # Frame counter initialization

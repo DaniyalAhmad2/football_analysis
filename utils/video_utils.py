@@ -24,7 +24,9 @@ def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, fram
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter(output_video, fourcc, fps, frame_size)
     
-    frame_files = sorted(glob.glob(os.path.join(frame_dir, "*.jpg")))
+    frame_files = sorted(glob.glob(os.path.join(frame_dir, "frame_*.jpg")))
+    vornoi_files = sorted(glob.glob(os.path.join(frame_dir, "frame_vornoi_*.jpg")))
+
     frame_count = len(frame_files)
 
     if frame_count <= 0:
@@ -140,9 +142,9 @@ def process_video(processor = None, video_source: str = 0, output_video: Optiona
         """
         frames = [frame for _, frame in batch]
         try:
-            processed_batch = processor.process(frames, fps)
-            for (frame_count, _), processed_frame in zip(batch, processed_batch):
-                processed_queue.put((frame_count, processed_frame))
+            processed_batch, vornoi_batch = processor.process(frames, fps)
+            for (frame_count, _), processed_frame, vornoi_frame in zip(batch, processed_batch, vornoi_batch):
+                processed_queue.put((frame_count, processed_frame,vornoi_frame))
         except Exception as e:
             print(f"Error processing batch: {e}")
             traceback.print_exc()
@@ -157,12 +159,15 @@ def process_video(processor = None, video_source: str = 0, output_video: Optiona
                 if item is None:
                     print("No more frames to display")
                     break
-                frame_count, processed_frame = item
+                frame_count, processed_frame, vornoi_frame = item
 
                 frame_filename = os.path.join(temp_dir, f"frame_{frame_count:06d}.jpg")
+                vornoi_filename = os.path.join(temp_dir,f"frame_vornoi_{frame_count:06d}.jpg")
                 cv2.imwrite(frame_filename, processed_frame)
+                cv2.imwrite(vornoi_filename, vornoi_frame)
                 
                 cv2.imshow('Football Analysis', processed_frame)
+                cv2.imshow("Vornoi_visualization", vornoi_frame)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     print("'q' pressed, initiating shutdown")

@@ -61,7 +61,7 @@ def main():
         [527, 0], [527, 57], [527, 122], [527, 229], [527, 293], [527, 351], # 24-29 (right goal line)
         [210, 176], [317, 176]                                               # 30-31 (center circle leftmost and rightmost points)
     ])
-
+ 
     # 6. Initialize the video processor
     # This processor will handle every task needed for analysis.
     processor = FootballVideoProcessor(obj_tracker,                                   # Created ObjectTracker object
@@ -81,7 +81,7 @@ def main():
     process_video(processor,                                # Created FootballVideoProcessor object
                   video_source='573e61_0.mp4', # Video source (in this case video file path)
                   output_video='output_videos/testx.mp4',    # Output video path (Optional)
-                  batch_size=10                             # Number of frames to process at once
+                  batch_size=10                           # Number of frames to process at once
                   )
 
 

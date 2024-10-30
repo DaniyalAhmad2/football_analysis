@@ -90,6 +90,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
         batch_kp_detections = self.kp_tracker.detect(frames)
 
         processed_frames = []
+        vornoi_frames = []
 
         # Process each frame in the batch
         for idx, (frame, object_detection, kp_detection) in enumerate(zip(frames, batch_obj_detections, batch_kp_detections)):
@@ -125,12 +126,13 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
             self.frame_num += 1
 
             # Annotate the current frame with the tracking information
-            annotated_frame = self.annotate(frame, all_tracks)
+            annotated_frame, projection_frame = self.annotate(frame, all_tracks)
 
             # Append the annotated frame to the processed frames list
             processed_frames.append(annotated_frame)
+            vornoi_frames.append(projection_frame)
 
-        return processed_frames
+        return processed_frames, vornoi_frames
 
     
     def annotate(self, frame: np.ndarray, tracks: Dict) -> np.ndarray:
@@ -162,7 +164,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
         # Annotate possession on the combined frame
         combined_frame = self._annotate_possession(combined_frame)
 
-        return combined_frame
+        return combined_frame, projection_frame
     
 
     def _combine_frame_projection(self, frame: np.ndarray, projection_frame: np.ndarray) -> np.ndarray:
