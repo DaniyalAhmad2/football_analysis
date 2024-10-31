@@ -22,8 +22,9 @@ def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, fram
         frame_size (Tuple[int, int]): Size of the frames as (width, height).
     """
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    fourcc2 = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter(output_video, fourcc, fps, frame_size)
-    out2 = cv2.VideoWriter("output_videos/Vronoi_out.mp4", fourcc,fps)
+    out2 = cv2.VideoWriter("output_videos/Vronoi_out.mp4", fourcc,fps,frame_size)
     
     frame_files = sorted(glob.glob(os.path.join(frame_dir, "frame_*.jpg")))
     vornoi_files = sorted(glob.glob(os.path.join(frame_dir, "frame_vornoi_*.jpg")))
