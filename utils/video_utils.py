@@ -13,45 +13,61 @@ import numpy as np
 
 def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, frame_size: Tuple[int, int]) -> None:
     """
-    Convert frames in a directory to a video file.
+    Convert frames in a directory to video files.
 
     Args:
         frame_dir (str): Directory containing frame images.
-        output_video (str): Path to save the output video.
-        fps (float): Frames per second for the output video.
-        frame_size (Tuple[int, int]): Size of the frames as (width, height).
+        output_video (str): Path to save the football analysis video.
+        fps (float): Frames per second for the output videos.
+        frame_size (Tuple[int, int]): Size of the football analysis frames as (width, height).
     """
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    fourcc2 = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    out = cv2.VideoWriter(output_video, fourcc, fps, frame_size)
-    out2 = cv2.VideoWriter("output_videos/Vronoi_out.mp4", fourcc,fps,frame_size)
     
+    # Initialize VideoWriter for football analysis frames
+    out = cv2.VideoWriter(output_video, fourcc, fps, frame_size)
+    
+    # Get sorted lists of frame filenames
     frame_files = sorted(glob.glob(os.path.join(frame_dir, "frame_*.jpg")))
     vornoi_files = sorted(glob.glob(os.path.join(frame_dir, "frame_vornoi_*.jpg")))
 
-    frame_count = len(frame_files)
-
-    if frame_count <= 0:
+    if not frame_files:
         out.release()
-        print("There are no frames to save")
+        print("There are no football analysis frames to save.")
         return
-    
-    for filename, vornoiname in zip(frame_files,vornoi_files):
+
+    # Read the first Voronoi frame to get its size
+    if vornoi_files:
+        first_voronoi_frame = cv2.imread(vornoi_files[0])
+        if first_voronoi_frame is not None:
+            voronoi_frame_size = (first_voronoi_frame.shape[1], first_voronoi_frame.shape[0])
+            # Initialize VideoWriter for Voronoi frames with the correct size
+            out2 = cv2.VideoWriter("output_videos/Voronoi_out.mp4", fourcc, fps, voronoi_frame_size)
+        else:
+            print("Could not read the first Voronoi frame to determine frame size.")
+            out.release()
+            return
+    else:
+        print("No Voronoi frames found.")
+        out.release()
+        return
+
+    for filename, vornoiname in zip(frame_files, vornoi_files):
         img = cv2.imread(filename)
         img2 = cv2.imread(vornoiname)
+
         if img is not None:
             out.write(img)
         else:
-            print(f"Could not read frame {filename}")
+            print(f"Could not read football analysis frame {filename}")
 
         if img2 is not None:
             out2.write(img2)
         else:
             print(f"Could not read Voronoi frame {vornoiname}")
-    
+
     out.release()
     out2.release()
-    print(f"Video saved as {output_video}")
+    print(f"Videos saved as {output_video} and output_videos/Voronoi_out.mp4")
 
 
 def process_video(processor = None, video_source: str = 0, output_video: Optional[str] = "output.mp4", 
