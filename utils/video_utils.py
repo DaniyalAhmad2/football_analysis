@@ -23,6 +23,7 @@ def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, fram
     """
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     out = cv2.VideoWriter(output_video, fourcc, fps, frame_size)
+    out2 = cv2.VideoWriter("Vronoi_out.mp4", fourcc,fps, frame_size)
     
     frame_files = sorted(glob.glob(os.path.join(frame_dir, "frame_*.jpg")))
     vornoi_files = sorted(glob.glob(os.path.join(frame_dir, "frame_vornoi_*.jpg")))
@@ -34,11 +35,21 @@ def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, fram
         print("There are no frames to save")
         return
     
-    for filename in frame_files:
+    for filename, vornoiname in zip(frame_files,vornoi_files):
         img = cv2.imread(filename)
-        out.write(img)
+        img2 = cv2.imread(vornoiname)
+        if img is not None:
+            out.write(img)
+        else:
+            print(f"Could not read frame {filename}")
+
+        if img2 is not None:
+            out2.write(img2)
+        else:
+            print(f"Could not read Voronoi frame {vornoiname}")
     
     out.release()
+    out2.release()
     print(f"Video saved as {output_video}")
 
 
