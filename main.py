@@ -50,16 +50,16 @@ def main():
     # 5. Define the keypoints for a top-down view of the football field (from left to right and top to bottom)
     # These are used to transform the perspective of the field.
     top_down_keypoints = np.array([
-        [0, 0], [0, 57], [0, 122], [0, 229], [0, 293], [0, 351],             # 0-5 (left goal line)
-        [32, 122], [32, 229],                                                # 6-7 (left goal box corners)
-        [64, 176],                                                           # 8 (left penalty dot)
-        [96, 57], [96, 122], [96, 229], [96, 293],                           # 9-12 (left penalty box)
-        [263, 0], [263, 122], [263, 229], [263, 351],                        # 13-16 (halfway line)
-        [431, 57], [431, 122], [431, 229], [431, 293],                       # 17-20 (right penalty box)
-        [463, 176],                                                          # 21 (right penalty dot)
-        [495, 122], [495, 229],                                              # 22-23 (right goal box corners)
-        [527, 0], [527, 57], [527, 122], [527, 229], [527, 293], [527, 351], # 24-29 (right goal line)
-        [210, 176], [317, 176]                                               # 30-31 (center circle leftmost and rightmost points)
+        [20, 16], [19, 184], [19, 341], [19, 600], [19, 757], [19, 925],             # 0-5 (left goal line)
+        [95, 341], [95, 600],                                                # 6-7 (left goal box corners)
+        [175, 472],                                                           # 8 (left penalty dot)
+        [253, 184], [253, 341], [253, 600], [253, 757],                           # 9-12 (left penalty box)
+        [733, 16], [733, 341], [733, 600], [733, 925],                        # 13-16 (halfway line)
+        [1211, 184], [1211, 341], [1211, 600], [1211, 757],                       # 17-20 (right penalty box)
+        [1289, 472],                                                          # 21 (right penalty dot)
+        [1370, 341], [1370, 600],                                              # 22-23 (right goal box corners)
+        [1446, 16], [1446, 184], [1446, 341], [1446, 600], [1446, 757], [1446, 925], # 24-29 (right goal line)
+        [604, 472], [861, 472]                                               # 30-31 (center circle leftmost and rightmost points)
     ])
  
     # 6. Initialize the video processor
@@ -69,7 +69,7 @@ def main():
                                        club_assigner,                                 # Created ClubAssigner object
                                        ball_player_assigner,                          # Created BallToPlayerAssigner object
                                        top_down_keypoints,                            # Created Top-Down keypoints numpy array
-                                       field_img_path='input_videos/field_2d_v2.png', # Top-Down field image path
+                                       field_img_path='input_videos/field.jpg', # Top-Down field image path
                                        save_tracks_dir='output_videos',               # Directory to save tracking information.
                                        draw_frame_num=True                            # Whether or not to draw current frame number on 
                                                                                       #the output video.
