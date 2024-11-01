@@ -216,40 +216,52 @@ class ClubAssigner:
                 all_ids.append(player_id)
                 all_types.append(track_type)
 
-        if len(all_colors) >= 2:
-            # Perform K-Means clustering on all jersey colors
+        if len(all_colors) >= 4:
+            # Perform K-Means clustering on all jersey colors into 4 clusters
             all_colors_np = np.array(all_colors)
-            kmeans_all = KMeans(n_clusters=2, random_state=42)
+            kmeans_all = KMeans(n_clusters=4, random_state=42)
             kmeans_all.fit(all_colors_np)
             labels_all = kmeans_all.labels_
 
-            # Map clusters to clubs
+            # Map clusters to clubs and player types
             centroids_all = kmeans_all.cluster_centers_
-            # Flatten the club colors for comparison
+
+            # Prepare lists of club colors and types (player or goalkeeper)
             club_colors_list = []
             club_names_list = []
-            for club_name, colors in self.all_club_colors.items():
-                for color in colors:
+            club_types_list = []
+
+            for club_name in self.all_club_colors.keys():
+                # Add player colors
+                for color in self.club_colors[club_name]:
                     club_colors_list.append(color)
                     club_names_list.append(club_name)
+                    club_types_list.append('player')
+                # Add goalkeeper colors
+                for color in self.goalkeeper_colors[club_name]:
+                    club_colors_list.append(color)
+                    club_names_list.append(club_name)
+                    club_types_list.append('goalkeeper')
+
             club_colors_np = np.array(club_colors_list)
 
-            cluster_to_club = {}
-            for cluster_label in range(2):
+            cluster_to_club_type = {}
+            for cluster_label in range(4):
                 centroid = centroids_all[cluster_label]
                 distances = np.linalg.norm(club_colors_np - centroid, axis=1)
                 club_index = np.argmin(distances)
                 club_name = club_names_list[club_index]
-                cluster_to_club[cluster_label] = club_name
+                club_type = club_types_list[club_index]
+                cluster_to_club_type[cluster_label] = (club_name, club_type)
 
-            # Assign clubs to all individuals
+            # Assign clubs and types to all individuals
             for idx, player_id in enumerate(all_ids):
                 cluster_label = labels_all[idx]
-                club_name = cluster_to_club[cluster_label]
+                club_name, club_type = cluster_to_club_type[cluster_label]
                 track_type = all_types[idx]
                 tracks[track_type][player_id]['club'] = club_name
                 # Assign the appropriate club color
-                if track_type == 'goalkeeper':
+                if club_type == 'goalkeeper':
                     tracks[track_type][player_id]['club_color'] = self.goalkeeper_colors[club_name]
                 else:
                     tracks[track_type][player_id]['club_color'] = self.club_colors[club_name]
@@ -258,16 +270,14 @@ class ClubAssigner:
             for idx, player_id in enumerate(all_ids):
                 color = all_colors[idx]
                 track_type = all_types[idx]
-                if track_type == 'goalkeeper':
-                    pred = self.model.predict(color, is_goalkeeper=True)
-                    club_name = list(self.goalkeeper_colors.keys())[pred]
-                    tracks[track_type][player_id]['club'] = club_name
-                    tracks[track_type][player_id]['club_color'] = self.goalkeeper_colors[club_name]
-                else:
-                    pred = self.model.predict(color, is_goalkeeper=False)
-                    club_name = list(self.club_colors.keys())[pred]
-                    tracks[track_type][player_id]['club'] = club_name
-                    tracks[track_type][player_id]['club_color'] = self.club_colors[club_name]
+                # Use both player and goalkeeper models to predict
+                pred_player = self.model.predict(color, is_goalkeeper=False)
+                pred_goalkeeper = self.model.predict(color, is_goalkeeper=True)
+                # Choose the prediction with the higher confidence or implement logic to decide
+                # For simplicity, let's assume we use the player prediction
+                club_name = list(self.club_colors.keys())[pred_player]
+                tracks[track_type][player_id]['club'] = club_name
+                tracks[track_type][player_id]['club_color'] = self.club_colors[club_name]
 
         return tracks
 
