@@ -185,8 +185,8 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
         h_frame, w_frame, _ = frame.shape
         h_proj, w_proj, _ = projection_frame.shape
 
-        # Scale the projection to 70% of its original size
-        scale_proj = 0.7
+        # Scale the projection to 30% of its original size
+        scale_proj = 0.3
         new_w_proj = int(w_proj * scale_proj)
         new_h_proj = int(h_proj * scale_proj)
         projection_resized = cv2.resize(projection_frame, (new_w_proj, new_h_proj))
