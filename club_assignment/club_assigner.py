@@ -200,6 +200,8 @@ class ClubAssigner:
         
         return tracks
 
+
+# changes
     # def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
     #     tracks = tracks.copy()
 
