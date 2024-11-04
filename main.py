@@ -3,10 +3,12 @@ from tracking import ObjectTracker, KeypointsTracker
 from club_assignment import ClubAssigner, Club
 from ball_to_player_assignment import BallToPlayerAssigner
 from annotation import FootballVideoProcessor
-
+import cv2
 import numpy as np
 
 def main():
+
+    output_video = 'output_videos/testx.mp4'
     """
     Main function to demonstrate how to use the football analysis project.
     This script will walk you through loading models, assigning clubs, tracking objects and players, and processing the video.
@@ -74,15 +76,32 @@ def main():
                                        draw_frame_num=True                            # Whether or not to draw current frame number on 
                                                                                       #the output video.
                                        )
+    cap = cv.VideoCapture('573e61_0.mp4')
+    frame_stop_count = 0
+    frames = []
+    while frame_stop_count < 100:
+        ret, frame = cap.read()
+        frame_stop_count += 1
+        if not ret:
+            break
+        frames.append(frame)
+    cap.release()
+    tracks = processor.process_for_TM(frames)
+    print(tracks)
+
     
     # 7. Process the video
     # Specify the input video path and the output video path. 
     # The batch_size determines how many frames are processed in one go.
-    process_video(processor,                                # Created FootballVideoProcessor object
-                  video_source='573e61_0.mp4', # Video source (in this case video file path)
-                  output_video='output_videos/testx.mp4',    # Output video path (Optional)
-                  batch_size=10                           # Number of frames to process at once
-                  )
+
+
+
+
+    # process_video(processor,                                # Created FootballVideoProcessor object
+    #               video_source='573e61_0.mp4', # Video source (in this case video file path)
+    #               output_video=output_video,    # Output video path (Optional)
+    #               batch_size=10                           # Number of frames to process at once
+    #               )
 
 
 if __name__ == '__main__':

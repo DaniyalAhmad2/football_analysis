@@ -71,6 +71,39 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
 
         self.field_image = field_image
 
+
+    def process_for_TM(self, frames: List[np.ndarray], fps: float = 1e-6) -> List[np.ndarray]:
+        """
+        Processes a batch of video frames, detects and tracks objects, assigns ball possession, and annotates the frames.
+
+        Args:
+            frames (List[np.ndarray]): List of video frames.
+            fps (float): Frames per second of the video, used for speed estimation.
+
+        Returns:
+            List[np.ndarray]: A list of annotated video frames.
+        """
+        
+        self.cur_fps = max(fps, 1e-6)
+
+        # Detect objects and keypoints in all frames
+        batch_obj_detections = self.obj_tracker.detect(frames)
+
+        # Process each frame in the batch
+        for idx, (frame, object_detection) in enumerate(zip(frames, batch_obj_detections)):
+            
+            # Track detected objects and keypoints
+            obj_tracks = self.obj_tracker.track(object_detection)
+
+            # Assign clubs to players based on their tracked position
+            obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks)
+
+            all_tracks = {'object': obj_tracks}
+
+
+
+        return all_tracks
+
     def process(self, frames: List[np.ndarray], fps: float = 1e-6) -> List[np.ndarray]:
         """
         Processes a batch of video frames, detects and tracks objects, assigns ball possession, and annotates the frames.
