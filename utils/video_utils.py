@@ -70,8 +70,8 @@ def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, fram
     print(f"Videos saved as {output_video} and output_videos/Voronoi_out.mp4")
 
 
-def process_video(processor = None, video_source: str = 0, output_video: Optional[str] = "output.mp4", 
-                  batch_size: int = 30, skip_seconds: int = 0, team_classifier = None) -> None:
+def process_video(team_classifier,processor = None, video_source: str = 0, output_video: Optional[str] = "output.mp4", 
+                  batch_size: int = 30, skip_seconds: int = 0) -> None:
     """
     Process a video file or stream, capturing, processing, and displaying frames.
 
@@ -170,7 +170,7 @@ def process_video(processor = None, video_source: str = 0, output_video: Optiona
         """
         frames = [frame for _, frame in batch]
         try:
-            processed_batch, vornoi_batch = processor.process(frames, fps, team_classifier=team_classifier)
+            processed_batch, vornoi_batch = processor.process(team_classifier,frames, fps)
             for (frame_count, _), processed_frame, vornoi_frame in zip(batch, processed_batch, vornoi_batch):
                 processed_queue.put((frame_count, processed_frame,vornoi_frame))
         except Exception as e:

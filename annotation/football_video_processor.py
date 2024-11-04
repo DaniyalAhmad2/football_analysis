@@ -106,7 +106,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
 
         return all_tracks_list
 
-    def process(self, frames: List[np.ndarray], fps: float = 1e-6, team_classifier=None) -> List[np.ndarray]:
+    def process(self, team_classifier,frames: List[np.ndarray], fps: float = 1e-6, ) -> List[np.ndarray]:
         """
         Processes a batch of video frames, detects and tracks objects, assigns ball possession, and annotates the frames.
 
@@ -135,7 +135,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
             kp_tracks = self.kp_tracker.track(kp_detection)
 
             # Assign clubs to players based on their tracked position
-            obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks,team_classifier=team_classifier)
+            obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks,team_classifier)
 
             all_tracks = {'object': obj_tracks, 'keypoints': kp_tracks}
 

@@ -177,7 +177,7 @@ class ClubAssigner:
         
         return pred[0], 0
 
-    def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]], team_classifier=None) -> Dict[str, Dict[int, Any]]:
+    def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]], team_classifier) -> Dict[str, Dict[int, Any]]:
         """
         Assign clubs to players and goalkeepers based on their jersey colors.
 
