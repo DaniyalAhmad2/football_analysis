@@ -171,10 +171,10 @@ class ClubAssigner:
         Returns:
             Tuple[str, int]: The club name and the predicted class index.
         """
-        color = self.get_jersey_color(frame, bbox, player_id, is_goalkeeper)
-        pred = self.model.predict(color, is_goalkeeper)
+        # color = self.get_jersey_color(frame, bbox, player_id, is_goalkeeper)
+        # pred = self.model.predict(color, is_goalkeeper)
         
-        return list(self.club_colors.keys())[pred], pred
+        return list(self.club_colors.keys())[0], 0
 
     def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
         """
