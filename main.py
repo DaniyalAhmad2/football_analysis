@@ -111,9 +111,12 @@ def main():
             # Crop the upper half of the bounding box from the frame
             crop = frame[y1:y_mid, x1:x2]
             # Check if the crop is valid (non-empty)
+            cv2.imshow('crop', crop)
+            cv2.waitKey(0)
             if crop.size > 0:
                 crops.append(crop)
     print(len(crops))
+    cv2.destroyAllWindows()
         # print(tracks)
 
     
