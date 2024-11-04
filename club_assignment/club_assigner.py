@@ -132,7 +132,7 @@ class ClubAssigner:
         # Increment the count of saved images
         self.saved_images += 1
 
-    def get_jersey_color(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False) -> Tuple[int, int, int]:
+    def get_crops(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False) -> Tuple[int, int, int]:
         """
         Extract the jersey color from a player's bounding box in the frame.
 
@@ -148,17 +148,17 @@ class ClubAssigner:
         # Save player images only if needed
         if self.saved_images < self.images_to_save:
             img = frame[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-            img_top = img[0:img.shape[0] // 2, :] 
-            self.save_player_image(img_top, player_id, is_goalkeeper)  # Pass is_goalkeeper here
+            # img_top = img[0:img.shape[0] // 2, :] 
+            self.save_player_image(img, player_id, is_goalkeeper)  # Pass is_goalkeeper here
 
         img = frame[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        img_top = img[0:img.shape[0] // 2, :]  # Use upper half for jersey detection
-        masked_img_top = self.apply_mask(img_top, green_threshold=0.08)
-        jersey_color = self.clustering(masked_img_top)
+        # img_top = img[0:img.shape[0] // 2, :]  # Use upper half for jersey detection
+        # masked_img_top = self.apply_mask(img_top, green_threshold=0.08)
+        # jersey_color = self.clustering(masked_img_top)
         
-        return jersey_color
+        return img
 
-    def get_player_club(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False) -> Tuple[str, int]:
+    def get_player_club(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False, team_classifier=None) -> Tuple[str, int]:
         """
         Determine the club associated with a player based on their jersey color.
 
@@ -171,12 +171,13 @@ class ClubAssigner:
         Returns:
             Tuple[str, int]: The club name and the predicted class index.
         """
-        # color = self.get_jersey_color(frame, bbox, player_id, is_goalkeeper)
-        # pred = self.model.predict(color, is_goalkeeper)
-        
-        return list(self.club_colors.keys())[0], 0
+        crop = self.get_crops(frame, bbox, player_id, is_goalkeeper)
 
-    def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
+        pred = team_classifier.predict([crop])
+        
+        return pred[0], 0
+
+    def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]], team_classifier=None) -> Dict[str, Dict[int, Any]]:
         """
         Assign clubs to players and goalkeepers based on their jersey colors.
 
@@ -193,7 +194,7 @@ class ClubAssigner:
             for player_id, track in tracks[track_type].items():
                 bbox = track['bbox']
                 is_goalkeeper = (track_type == 'goalkeeper')
-                club, _ = self.get_player_club(frame, bbox, player_id, is_goalkeeper)
+                club, _ = self.get_player_club(frame, bbox, player_id, is_goalkeeper,team_classifier=team_classifier)
                 
                 tracks[track_type][player_id]['club'] = club
                 tracks[track_type][player_id]['club_color'] = self.club_colors[club]

@@ -130,11 +130,12 @@ def main():
 
 
 
-    # process_video(processor,                                # Created FootballVideoProcessor object
-    #               video_source='573e61_0.mp4', # Video source (in this case video file path)
-    #               output_video=output_video,    # Output video path (Optional)
-    #               batch_size=10                           # Number of frames to process at once
-    #               )
+    process_video(processor,                                # Created FootballVideoProcessor object
+                  video_source='573e61_0.mp4', # Video source (in this case video file path)
+                  output_video=output_video,    # Output video path (Optional)
+                  batch_size=10,                           # Number of frames to process at once,
+                  team_classifier=team_classifier
+                  )
 
 
 if __name__ == '__main__':
