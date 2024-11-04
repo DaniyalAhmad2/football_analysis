@@ -120,6 +120,46 @@ def main():
         # print(tracks)
     team_classifier.fit(crops)
 
+    frame_stop_count = 0
+    frames = []
+    while frame_stop_count < 50:
+        ret, frame = cap.read()
+        frames.append(frame)
+        frame_stop_count += 1
+        if not ret:
+            break
+        
+    cap.release()
+    tracks = processor.process_for_TM(frames)
+    crops: List[np.ndarray] = []
+
+    # Iterate over the frames and corresponding detections
+    for frame, detection in zip(frames, tracks):
+        players = detection['object']['player']
+        for player_id, player_data in players.items():
+            bbox = player_data['bbox']  # [x1, y1, x2, y2]
+            x1, y1, x2, y2 = bbox
+            # Ensure the coordinates are integers
+            x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
+            # Ensure coordinates are within the frame boundaries
+            h, w, _ = frame.shape
+            x1 = max(0, x1)
+            y1 = max(0, y1)
+            x2 = min(w, x2)
+            y2 = min(h, y2)
+            # Crop the whole bounding box from the frame
+            crop = frame[y1:y2, x1:x2]
+            # Check if the crop is valid (non-empty)
+            # cv2.imshow('crop', crop)
+            # cv2.waitKey(0)
+            if crop.size > 0:
+                crops.append(crop)
+
+
+
+    player_ids = team_classifier.predict(crops)
+    print(player_ids)
+
     
     # 7. Process the video
     # Specify the input video path and the output video path. 
