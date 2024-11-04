@@ -135,7 +135,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
             kp_tracks = self.kp_tracker.track(kp_detection)
 
             # Assign clubs to players based on their tracked position
-            obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks,team_classifier)
+            obj_tracks = self.club_assigner.assign_clubs(team_classifier,frame, obj_tracks)
 
             all_tracks = {'object': obj_tracks, 'keypoints': kp_tracks}
 

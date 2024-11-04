@@ -158,7 +158,7 @@ class ClubAssigner:
         
         return img
 
-    def get_player_club(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False, team_classifier=None) -> Tuple[str, int]:
+    def get_player_club(self,team_classifier, frame: np.ndarray, bbox: Tuple[int, int, int, int], player_id: int, is_goalkeeper: bool = False) -> Tuple[str, int]:
         """
         Determine the club associated with a player based on their jersey color.
 
@@ -177,7 +177,7 @@ class ClubAssigner:
         
         return pred[0], 0
 
-    def assign_clubs(self, frame: np.ndarray, tracks: Dict[str, Dict[int, Any]], team_classifier) -> Dict[str, Dict[int, Any]]:
+    def assign_clubs(self, team_classifier,frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
         """
         Assign clubs to players and goalkeepers based on their jersey colors.
 
@@ -194,7 +194,7 @@ class ClubAssigner:
             for player_id, track in tracks[track_type].items():
                 bbox = track['bbox']
                 is_goalkeeper = (track_type == 'goalkeeper')
-                club, _ = self.get_player_club(frame, bbox, player_id, is_goalkeeper,team_classifier=team_classifier)
+                club, _ = self.get_player_club(team_classifier,frame, bbox, player_id, is_goalkeeper)
                 
                 tracks[track_type][player_id]['club'] = club
                 tracks[track_type][player_id]['club_color'] = self.club_colors[club]
