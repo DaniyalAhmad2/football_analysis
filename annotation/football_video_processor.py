@@ -90,6 +90,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
         batch_obj_detections = self.obj_tracker.detect(frames)
 
         # Process each frame in the batch
+        all_tracks_list = []
         for idx, (frame, object_detection) in enumerate(zip(frames, batch_obj_detections)):
             
             # Track detected objects and keypoints
@@ -99,10 +100,11 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
             obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks)
 
             all_tracks = {'object': obj_tracks}
+            all_tracks_list.append(all_tracks)
 
 
 
-        return all_tracks
+        return all_tracks_list
 
     def process(self, frames: List[np.ndarray], fps: float = 1e-6) -> List[np.ndarray]:
         """
