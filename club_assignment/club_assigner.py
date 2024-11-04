@@ -22,7 +22,8 @@ class ClubAssigner:
         self.model = ClubAssignerModel(self.club1, self.club2)
         self.club_colors: Dict[str, Any] = {
             club1.name: club1.player_jersey_color,
-            club2.name: club2.player_jersey_color
+            club2.name: club2.player_jersey_color,
+            'unknown': (0, 0, 0)
         }
         self.goalkeeper_colors: Dict[str, Any] = {
             club1.name: club1.goalkeeper_jersey_color,
@@ -30,7 +31,8 @@ class ClubAssigner:
         }
         self.all_club_colors = {
             club1.name: [club1.player_jersey_color, club1.goalkeeper_jersey_color],
-            club2.name: [club2.player_jersey_color, club2.goalkeeper_jersey_color]
+            club2.name: [club2.player_jersey_color, club2.goalkeeper_jersey_color],
+            
         }
         self.kmeans = KMeans(n_clusters=2, init='k-means++', n_init=10, random_state=42)
 
@@ -174,8 +176,8 @@ class ClubAssigner:
         crop = self.get_crops(frame, bbox, player_id, is_goalkeeper)
 
         pred = team_classifier.predict([crop])
-        
-        return pred[0], 0
+        cluster_label = pred[0]
+        return cluster_label, 0
 
     def assign_clubs(self, team_classifier,frame: np.ndarray, tracks: Dict[str, Dict[int, Any]]) -> Dict[str, Dict[int, Any]]:
         """
@@ -189,13 +191,13 @@ class ClubAssigner:
             Dict[str, Dict[int, Any]]: The updated tracking data with assigned clubs.
         """
         tracks = tracks.copy()
-
+        cluster_to_club = {0: 'Club1', 1: 'Club2'}
         for track_type in ['goalkeeper', 'player']:
             for player_id, track in tracks[track_type].items():
                 bbox = track['bbox']
                 is_goalkeeper = (track_type == 'goalkeeper')
-                club, _ = self.get_player_club(team_classifier,frame, bbox, player_id, is_goalkeeper)
-                
+                cluster_label, _ = self.get_player_club(team_classifier,frame, bbox, player_id, is_goalkeeper)
+                club = cluster_to_club.get(cluster_label, 'unknown')
                 tracks[track_type][player_id]['club'] = club
                 tracks[track_type][player_id]['club_color'] = self.club_colors[club]
         
