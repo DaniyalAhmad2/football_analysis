@@ -89,7 +89,7 @@ def main():
         if not ret:
             break
         
-    cap.release()
+    # cap.release()
     tracks = processor.process_for_TM(frames)
     crops: List[np.ndarray] = []
 
