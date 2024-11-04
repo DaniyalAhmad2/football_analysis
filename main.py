@@ -79,7 +79,7 @@ def main():
     cap = cv2.VideoCapture('573e61_0.mp4')
     frame_stop_count = 0
     frames = []
-    while frame_stop_count < 1000:
+    while frame_stop_count < 500:
         ret, frame = cap.read()
         frames.append(frame)
         frame_stop_count += 1
