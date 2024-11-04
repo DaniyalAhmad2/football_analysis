@@ -76,7 +76,7 @@ def main():
                                        draw_frame_num=True                            # Whether or not to draw current frame number on 
                                                                                       #the output video.
                                        )
-    cap = cv.VideoCapture('573e61_0.mp4')
+    cap = cv2.VideoCapture('573e61_0.mp4')
     frame_stop_count = 0
     frames = []
     while frame_stop_count < 100:
