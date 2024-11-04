@@ -97,7 +97,7 @@ class FootballVideoProcessor(AbstractAnnotator, AbstractVideoProcessor):
             obj_tracks = self.obj_tracker.track(object_detection)
 
             # Assign clubs to players based on their tracked position
-            obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks)
+            # obj_tracks = self.club_assigner.assign_clubs(frame, obj_tracks)
 
             all_tracks = {'object': obj_tracks}
             all_tracks_list.append(all_tracks)
