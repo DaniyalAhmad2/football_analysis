@@ -5,6 +5,8 @@ from ball_to_player_assignment import BallToPlayerAssigner
 from annotation import FootballVideoProcessor
 import cv2
 import numpy as np
+from typing import List
+import torch
 
 def main():
 
@@ -88,7 +90,31 @@ def main():
         
     cap.release()
     tracks = processor.process_for_TM(frames)
-    print(tracks)
+    crops: List[np.ndarray] = []
+
+    # Iterate over the frames and corresponding detections
+    for frame, detection in zip(frames, tracks):
+        players = detection['object']['player']
+        for player_id, player_data in players.items():
+            bbox = player_data['bbox']  # [x1, y1, x2, y2]
+            x1, y1, x2, y2 = bbox
+            # Calculate the midpoint of the y-coordinate to get the upper half
+            y_mid = (y1 + y2) / 2
+            # Ensure the coordinates are integers
+            x1, y1, x2, y_mid = map(int, [x1, y1, x2, y_mid])
+            # Ensure coordinates are within the frame boundaries
+            h, w, _ = frame.shape
+            x1 = max(0, x1)
+            y1 = max(0, y1)
+            x2 = min(w, x2)
+            y_mid = min(h, y_mid)
+            # Crop the upper half of the bounding box from the frame
+            crop = frame[y1:y_mid, x1:x2]
+            # Check if the crop is valid (non-empty)
+            if crop.size > 0:
+                crops.append(crop)
+    print(len(crops))
+        # print(tracks)
 
     
     # 7. Process the video
