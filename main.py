@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from typing import List
 import torch
+from club_assignment.team import TeamClassifier
 
 def main():
 
@@ -81,7 +82,7 @@ def main():
     cap = cv2.VideoCapture('573e61_0.mp4')
     frame_stop_count = 0
     frames = []
-    while frame_stop_count < 5:
+    while frame_stop_count < 50:
         ret, frame = cap.read()
         frames.append(frame)
         frame_stop_count += 1
@@ -109,13 +110,15 @@ def main():
             # Crop the whole bounding box from the frame
             crop = frame[y1:y2, x1:x2]
             # Check if the crop is valid (non-empty)
-            cv2.imshow('crop', crop)
-            cv2.waitKey(0)
+            # cv2.imshow('crop', crop)
+            # cv2.waitKey(0)
             if crop.size > 0:
                 crops.append(crop)
-    print(len(crops))
-    cv2.destroyAllWindows()
+    # print(len(crops))
+    # cv2.destroyAllWindows()
+    team_classifier = TeamClassifier(device='cuda' if torch.cuda.is_available() else 'cpu')
         # print(tracks)
+    team_classifier.fit(crops)
 
     
     # 7. Process the video
