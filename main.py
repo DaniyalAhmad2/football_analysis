@@ -98,21 +98,17 @@ def main():
         for player_id, player_data in players.items():
             bbox = player_data['bbox']  # [x1, y1, x2, y2]
             x1, y1, x2, y2 = bbox
-            # Calculate the midpoint of the y-coordinate to get the upper half
-            y_mid = (y1 + y2) / 2
             # Ensure the coordinates are integers
-            x1, y1, x2, y_mid = map(int, [x1, y1, x2, y_mid])
+            x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
             # Ensure coordinates are within the frame boundaries
             h, w, _ = frame.shape
             x1 = max(0, x1)
             y1 = max(0, y1)
             x2 = min(w, x2)
-            y_mid = min(h, y_mid)
-            # Crop the upper half of the bounding box from the frame
-            crop = frame[y1:y_mid, x1:x2]
+            y2 = min(h, y2)
+            # Crop the whole bounding box from the frame
+            crop = frame[y1:y2, x1:x2]
             # Check if the crop is valid (non-empty)
-            cv2.imshow('crop', crop)
-            cv2.waitKey(0)
             if crop.size > 0:
                 crops.append(crop)
     print(len(crops))
