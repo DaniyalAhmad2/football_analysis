@@ -109,6 +109,8 @@ def main():
             # Crop the whole bounding box from the frame
             crop = frame[y1:y2, x1:x2]
             # Check if the crop is valid (non-empty)
+            cv2.imshow('crop', crop)
+            cv2.waitKey(0)
             if crop.size > 0:
                 crops.append(crop)
     print(len(crops))
