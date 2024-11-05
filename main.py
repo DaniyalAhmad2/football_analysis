@@ -36,11 +36,11 @@ def main():
     # Create 'Club' objects - Needed for Player Club Assignment
     # Replace the RGB values with the actual colors of the clubs.
     club1 = Club('Club1',         # club name 
-                 (232, 247, 248), # player jersey color
+                 (212, 91, 83), # player jersey color
                  (6, 25, 21)      # goalkeeper jersey color
                  )
     club2 = Club('Club2',         # club name 
-                 (172, 251, 145), # player jersey color
+                 (106, 168, 222), # player jersey color
                  (239, 156, 132)  # goalkeeper jersey color
                  )   
 
