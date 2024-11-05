@@ -48,10 +48,9 @@ class ObjectAnnotator(AbstractAnnotator):
                 if track == 'ball':
                     frame = self.draw_triangle(frame, item['bbox'], self.ball_annotation_color)
                 elif track == 'referee':
-                    frame = self.draw_ellipse(frame, item['bbox'], self.referee_annotation_color, track_id, -1, track)
+                    frame = self.draw_ellipse(frame, item['bbox'], self.referee_annotation_color, track_id, track)
                 else:
-                    speed = item.get('speed', 0)
-                    frame = self.draw_ellipse(frame, item['bbox'], color, track_id, speed, track)
+                    frame = self.draw_ellipse(frame, item['bbox'], color, track_id, track)
 
                     # If the player has the ball, draw a triangle to indicate it
                     if 'has_ball' in item and item['has_ball']:
@@ -136,16 +135,15 @@ class ObjectAnnotator(AbstractAnnotator):
        
 
     def draw_ellipse(self, frame: np.ndarray, bbox: Tuple[int, int, int, int], color: Tuple[int, int, int], 
-                     track_id: int, speed: float, obj_cls: str = 'player') -> np.ndarray:
+                     track_id: int, obj_cls: str = 'player') -> np.ndarray:
         """
-        Draws an ellipse around an object and annotates it with its ID and speed.
+        Draws an ellipse around an object and annotates it with its ID.
 
         Args:
             frame (np.ndarray): The frame where the ellipse will be drawn.
             bbox (Tuple[int, int, int, int]): The bounding box of the object.
             color (Tuple[int, int, int]): The color of the ellipse.
             track_id (int): The unique identifier of the object.
-            speed (float): The speed of the object (in km/h).
             obj_cls (str): The object class, either 'player', 'goalkeeper', or 'referee'.
 
         Returns:
@@ -179,12 +177,5 @@ class ObjectAnnotator(AbstractAnnotator):
         x1 = x - len(str(track_id)) * 5
         cv2.putText(frame, text=f"{track_id}", org=(x1, y + h // 2), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1,
                     color=color2, thickness=2)
-
-        # If the object's speed is available, annotate it as well
-        if speed >= 0:
-            speed_str = f"{speed:.2f} km/h"
-            x2 = x - len(speed_str) * 5
-            cv2.putText(frame, text=speed_str, org=(x2, y + 20), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1,
-                        color=color2, thickness=2)
 
         return frame

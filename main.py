@@ -1,7 +1,6 @@
 from utils import process_video
 from tracking import ObjectTracker, KeypointsTracker
 from club_assignment import ClubAssigner, Club
-from ball_to_player_assignment import BallToPlayerAssigner
 from annotation import FootballVideoProcessor
 import cv2
 import numpy as np
@@ -50,7 +49,7 @@ def main():
     club_assigner = ClubAssigner(club1, club2)
 
     # 4. Initialize the BallToPlayerAssigner object
-    ball_player_assigner = BallToPlayerAssigner(club1, club2)
+    # ball_player_assigner = BallToPlayerAssigner(club1, club2)
 
     # 5. Define the keypoints for a top-down view of the football field (from left to right and top to bottom)
     # These are used to transform the perspective of the field.
@@ -72,7 +71,7 @@ def main():
     processor = FootballVideoProcessor(obj_tracker,                                   # Created ObjectTracker object
                                        kp_tracker,                                    # Created KeypointsTracker object
                                        club_assigner,                                 # Created ClubAssigner object
-                                       ball_player_assigner,                          # Created BallToPlayerAssigner object
+                                    #    ball_player_assigner,                          # Created BallToPlayerAssigner object
                                        top_down_keypoints,                            # Created Top-Down keypoints numpy array
                                        field_img_path='input_videos/field.jpg', # Top-Down field image path
                                        save_tracks_dir='output_videos',               # Directory to save tracking information.
@@ -82,7 +81,7 @@ def main():
     cap = cv2.VideoCapture('573e61_0.mp4')
     frame_stop_count = 0
     frames = []
-    while frame_stop_count < 50:
+    while frame_stop_count < 200:
         ret, frame = cap.read()
         frames.append(frame)
         frame_stop_count += 1
@@ -119,6 +118,7 @@ def main():
     team_classifier = TeamClassifier(device='cuda' if torch.cuda.is_available() else 'cpu')
         # print(tracks)
     team_classifier.fit(crops)
+    frames=[]
 
     
 
@@ -128,13 +128,14 @@ def main():
     # The batch_size determines how many frames are processed in one go.
 
 
+    players_team_assigned = {}
 
-
-    process_video(team_classifier,
+    process_video(players_team_assigned,
+                  team_classifier,
                     processor,                                # Created FootballVideoProcessor object
                   video_source='573e61_0.mp4', # Video source (in this case video file path)
                   output_video=output_video,    # Output video path (Optional)
-                  batch_size=10                           # Number of frames to process at once,
+                  batch_size=2                           # Number of frames to process at once,
                   
                   )
 

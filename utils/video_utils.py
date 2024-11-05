@@ -70,7 +70,7 @@ def _convert_frames_to_video(frame_dir: str, output_video: str, fps: float, fram
     print(f"Videos saved as {output_video} and output_videos/Voronoi_out.mp4")
 
 
-def process_video(team_classifier,processor = None, video_source: str = 0, output_video: Optional[str] = "output.mp4", 
+def process_video(players_team_assigned,team_classifier,processor = None, video_source: str = 0, output_video: Optional[str] = "output.mp4", 
                   batch_size: int = 30, skip_seconds: int = 0) -> None:
     """
     Process a video file or stream, capturing, processing, and displaying frames.
@@ -139,6 +139,7 @@ def process_video(team_classifier,processor = None, video_source: str = 0, outpu
         
         print("Starting frame processing")
         frame_batch = []
+        
         while not stop_event.is_set():
             try:
                 item = frame_queue.get(timeout=1)
@@ -151,7 +152,7 @@ def process_video(team_classifier,processor = None, video_source: str = 0, outpu
                 frame_batch.append((frame_count, frame))
 
                 if len(frame_batch) == batch_size:
-                    process_batch(frame_batch)
+                    process_batch(frame_batch,players_team_assigned)
                     frame_batch = []
             except queue.Empty:
                 continue
@@ -161,7 +162,7 @@ def process_video(team_classifier,processor = None, video_source: str = 0, outpu
         processed_queue.put(None)  # Signal end of processing
         print("Frame processing complete")
 
-    def process_batch(batch: List[Tuple[int, np.ndarray]]) -> None:
+    def process_batch(batch: List[Tuple[int, np.ndarray]], players_team_assigned) -> None:
         """
         Process a batch of frames and put results in the processed queue.
 
@@ -170,7 +171,7 @@ def process_video(team_classifier,processor = None, video_source: str = 0, outpu
         """
         frames = [frame for _, frame in batch]
         try:
-            processed_batch, vornoi_batch = processor.process(team_classifier,frames, fps)
+            processed_batch, vornoi_batch = processor.process(players_team_assigned,team_classifier,frames, fps)
             for (frame_count, _), processed_frame, vornoi_frame in zip(batch, processed_batch, vornoi_batch):
                 processed_queue.put((frame_count, processed_frame,vornoi_frame))
         except Exception as e:
