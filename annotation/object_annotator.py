@@ -110,7 +110,7 @@ class ObjectAnnotator(AbstractAnnotator):
         # Draw two concentric ellipses
         for i in range(2):
             cv2.ellipse(frame, center=(x, y), axes=(w - i * size_decrement, 20 - i * size_decrement),
-                        angle=0, startAngle=-30, endAngle=240, color=color, thickness=2, lineType=cv2.LINE_AA)
+                        angle=0, startAngle=-30, endAngle=240, color=color, thickness=4, lineType=cv2.LINE_AA)
             
     
     def _draw_dashed_ellipse(self, frame: np.ndarray, x: int, y: int, w: int, color: Tuple[int, int, int]) -> None:
@@ -130,7 +130,7 @@ class ObjectAnnotator(AbstractAnnotator):
         # Draw dashed lines by alternating between dashes and gaps
         for angle in range(-30, total_angle, dash_length * 2):
             cv2.ellipse(frame, center=(x, y), axes=(w, 20), angle=0,
-                        startAngle=angle, endAngle=angle + dash_length, color=color, thickness=2, lineType=cv2.LINE_AA)
+                        startAngle=angle, endAngle=angle + dash_length, color=color, thickness=4, lineType=cv2.LINE_AA)
 
        
 
@@ -166,7 +166,7 @@ class ObjectAnnotator(AbstractAnnotator):
         else:
             # Standard ellipse for players
             cv2.ellipse(frame, center=(x, y), axes=(w, 20), angle=0, startAngle=-30, endAngle=240, color=color,
-                        thickness=2, lineType=cv2.LINE_AA)
+                        thickness=4, lineType=cv2.LINE_AA)
 
         # Draw a small rectangle under the ellipse to hold the object's ID
         y = int(bbox[3]) + 10
