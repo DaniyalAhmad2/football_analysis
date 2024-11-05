@@ -96,19 +96,24 @@ class ProjectionAnnotator(AbstractAnnotator):
 
     def _draw_voronoi(self, image: np.ndarray, tracks: Dict) -> np.ndarray:
         """
-        Draws Voronoi regions for players and goalkeepers on the frame.
+        Draws Voronoi regions for players and goalkeepers with fuzzy edges on the frame.
         
         Parameters:
             image (np.ndarray): The image on which to draw the Voronoi regions.
             tracks (Dict): A dictionary containing tracking information for 'player' and 'goalkeeper'.
 
         Returns:
-            np.ndarray: The frame with Voronoi regions drawn.
+            np.ndarray: The frame with Voronoi regions drawn with fuzzy edges.
         """
         height, width = image.shape[:2]
-        overlay = image.copy()
+
+        # Initialize overlay and mask accumulator
+        overlay = np.zeros_like(image, dtype=np.float32)
+        mask_accumulator = np.zeros((height, width), dtype=np.float32)
+
         points, player_colors = [], []
 
+        # Collect player positions and colors
         for class_name in ['player', 'goalkeeper']:
             track_data = tracks.get(class_name, {})
             for track_id, track_info in track_data.items():
@@ -116,6 +121,7 @@ class ProjectionAnnotator(AbstractAnnotator):
                 points.append([x, y])
                 player_colors.append(rgb_bgr_converter(track_info['club_color']))
 
+        # Add boundary points to ensure Voronoi diagram covers the entire image
         boundary_margin = 1000
         boundary_points = [
             [-boundary_margin, -boundary_margin], [width // 2, -boundary_margin],
@@ -130,19 +136,50 @@ class ProjectionAnnotator(AbstractAnnotator):
         if len(points) > 2:
             points = np.array(points)
             vor = Voronoi(points)
+
             for region_index, region in enumerate(vor.point_region):
                 if -1 not in vor.regions[region] and len(vor.regions[region]) > 0:
+                    # Get the polygon vertices
                     polygon = [vor.vertices[i] for i in vor.regions[region]]
                     polygon = np.array(polygon, np.int32).reshape((-1, 1, 2))
-                    color = player_colors[region_index] if region_index < len(player_colors) else boundary_color
-                    cv2.polylines(overlay, [polygon], isClosed=True, color=color, thickness=2)
-                    cv2.fillPoly(overlay, [polygon], color=color)
 
+                    # Create a mask for the region
+                    mask_region = np.zeros((height, width), dtype=np.uint8)
+                    cv2.fillPoly(mask_region, [polygon], 255)
+
+                    # Apply Gaussian blur to create fuzzy edges
+                    mask_blurred = cv2.GaussianBlur(mask_region, (21, 21), 0)
+
+                    # Normalize the blurred mask
+                    mask_blurred_float = mask_blurred.astype(np.float32) / 255.0
+
+                    # Get the color for the region
+                    if region_index < len(player_colors):
+                        color = player_colors[region_index]
+                    else:
+                        color = boundary_color
+                    region_color = np.array(color, dtype=np.float32).reshape((1, 1, 3))
+
+                    # Multiply the color by the mask and accumulate
+                    mask_blurred_float_expanded = mask_blurred_float[..., np.newaxis]
+                    region_overlay = mask_blurred_float_expanded * region_color
+                    overlay += region_overlay
+
+                    # Accumulate the mask for normalization
+                    mask_accumulator += mask_blurred_float
+
+        # Normalize the overlay to prevent over-brightening
+        mask_accumulator_expanded = mask_accumulator[..., np.newaxis]
+        mask_accumulator_expanded = np.maximum(mask_accumulator_expanded, 1e-6)
+        overlay /= mask_accumulator_expanded
+
+        # Convert the overlay to uint8
+        overlay = np.clip(overlay, 0, 255).astype(np.uint8)
+
+        # Blend the overlay with the original image
         alpha = 0.6
         cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
-        
+
         return image
-
-
 
     
